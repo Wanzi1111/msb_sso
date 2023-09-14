@@ -1,0 +1,55 @@
+// 自定义UI样式
+
+// 抽屉
+.el-drawer__body {
+  overflow: auto;
+}
+.el-drawer__header {
+  margin-bottom: 0;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+// 按钮
+.el-button--mini {
+  padding: 7px;
+}
+.el-button--small {
+  padding: 9px;
+}
+.el-button--medium {
+  padding: 10px;
+}
+
+// 弹窗
+.el-dialog__header {
+  border: 1px solid #ddd;
+  padding-bottom: 20px;
+}
+
+// 文字提示
+.el-tooltip__popper {
+  max-width: 600px;
+}
+
+// 输入框
+.el-input__inner {
+  line-height: 1;
+}
+
+// textarea
+.el-textarea__inner {
+  min-height: 36px!important;
+}
+
+// 居右的数字输入框
+.input-number-left {
+  .el-input__inner {
+    text-align: left;
+  }
+}
+
+// 预览插件的关闭图标太暗了
+.el-image-viewer__close {
+  color: #FFF;
+}

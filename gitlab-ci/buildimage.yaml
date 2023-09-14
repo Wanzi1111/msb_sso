@@ -1,0 +1,21 @@
+
+buildimage:
+  stage: buildimage
+  image: docker:19.03.9
+  tags:
+    - dev-frontend-docker
+  script:
+    - mkdir dockerbuild
+    - sed -i 's/node:12.16.1/node:'"${NODE:-12.16.1}"'/' Dockerfile
+    - cp Dockerfile dockerbuild
+    - cp package-lock.json dockerbuild
+    - cp package.json dockerbuild
+    - cd dockerbuild
+    - docker build . -t node:${CI_PROJECT_PATH_SLUG}
+  only:
+    refs:
+      - /^test\/.*$/
+      - /^dev\/.*$/
+      - /^staging$/
+    changes:
+      - package.json

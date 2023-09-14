@@ -1,0 +1,62 @@
+qa:
+  stage: deploy
+  image: node:${CI_PROJECT_PATH_SLUG}
+  tags:
+    - dev-frontend-docker
+  script:
+    - ENV="qa"
+
+    - BACKEND_API_1='https://logisticstest-mp.meishubao.com/'
+    - BACKEND_API_2='https://ums-test-api.meixiu.mobi'
+
+    - USERNAME=${GITLAB_USER_LOGIN%%@*}
+    - NG_CONF_PATH='/etc/nginx/conf.d'
+
+    - QA_N=`echo ${CI_COMMIT_REF_NAME##*/} | sed -r 's,\.,,g'`
+
+    - PNAME=${PNAME:-${CI_PROJECT_PATH_SLUG}}
+    - DOMAIN=`echo "fe-qa${QA_N}-$PNAME.${D:-17weixiao.net}" | tr A-Z a-z`
+    - ROOT="/data/www/$DOMAIN"
+
+    - test -d $ROOT || mkdir -p $ROOT
+    - test -d $NG_CONF_PATH || mkdir -p $NG_CONF_PATH
+
+    - cat nginx/template.conf > $NG_CONF_PATH/$DOMAIN.conf
+    - sed -i 's,%%DOMAIN%%,'"$DOMAIN"',g; s,%%ROOT%%,'"$ROOT"',g' $NG_CONF_PATH/$DOMAIN.conf
+
+    - set | grep '^BACKEND_API' | sed 's/=/ /' | awk '{print $1,$2}' | while read k v;
+      do
+      v=${v%\'};
+      v=${v#\'};
+      echo $k $v;
+      sed -i 's,%%'"$k"'%%,'"$v"',' $NG_CONF_PATH/$DOMAIN.conf;
+      done
+
+    - if [[ "$ZIP" == 'on' ]];then
+    - sed -i '/###ZIP###/,/###ZIP###/s/^#//' $NG_CONF_PATH/$DOMAIN.conf
+    - fi
+
+    - if [[ "$ORIGIN" == 'on' ]];then
+    - sed -i '/###ORIGIN###/,/###ORIGIN###/s/^#//' $NG_CONF_PATH/$DOMAIN.conf
+    - fi
+
+    - docker run -v /etc/nginx:/etc/nginx -v /data:/data --rm nginx:1.14 nginx -t
+    - docker exec nginx nginx -s reload
+
+    - cp -r /node_modules .
+    - npm run build:test --no-progress
+
+    - rm -rf $ROOT/*
+    - /bin/cp -r dist/* $ROOT/
+    - echo https://$DOMAIN
+  cache:
+    key:
+      files:
+        - package.json
+    paths:
+      - node_modules
+  only:
+    - /^test\/.*$/
+  except:
+    - branchs
+    - tags

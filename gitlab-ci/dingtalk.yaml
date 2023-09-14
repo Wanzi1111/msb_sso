@@ -1,0 +1,31 @@
+
+dingtalk:ok:
+  stage: notification
+  image: python:3.6
+  script:
+    - export PIP_INDEX_URL='https://pypi.tuna.tsinghua.edu.cn/simple'
+    - pip install requests
+    - wget http://dingtalk.17weixiao.net/dingtalk.py
+    - export PIPELINE_RESULT=OK
+    - python dingtalk.py
+  when: on_success
+  only:
+    - /^dev\/.*$/
+    - /^test\/.*$/
+    - /^staging$/
+
+
+dingtalk:error:
+  stage: notification
+  image: python:3.6
+  script:
+    - export PIP_INDEX_URL='https://pypi.tuna.tsinghua.edu.cn/simple'
+    - pip install requests
+    - wget http://dingtalk.17weixiao.net/dingtalk.py
+    - export PIPELINE_RESULT=ERROR
+    - python dingtalk.py
+  when: on_failure
+  only:
+    - /^dev\/.*$/
+    - /^test\/.*$/
+    - /^staging$/
